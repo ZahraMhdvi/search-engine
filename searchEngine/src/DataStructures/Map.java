@@ -1,87 +1,77 @@
 package DataStructures;
 
-import Interface.MapInterface;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
-public class Map<K, V> implements MapInterface<K, V> {
-    private List<Node<K, V>> bucket;
-    private int size;
+public class Map<K, V> {
+    private List<Entry<K, V>> entries;
 
     public Map() {
-        this.bucket = new ArrayList<>();
-        this.size = 0;
+        this.entries = new ArrayList<>();
     }
 
-
-
-    @Override
     public void put(K key, V value) {
-        for (Node<K, V> node : bucket) {
-            if (node.key.equals(key)) {
-                node.value = value;
+        for (Entry<K, V> entry : entries) {
+            if (entry.getKey().equals(key)) {
+                entry.setValue(value);
                 return;
             }
         }
-        bucket.add(new Node<>(key, value));
-        size++;
+        entries.add(new Entry<>(key, value));
     }
 
-    @Override
     public V get(K key) {
-        for (Node<K, V> node : bucket) {
-            if (node.key.equals(key)) {
-                return node.value;
+        for (Entry<K, V> entry : entries) {
+            if (entry.getKey().equals(key)) {
+                return entry.getValue();
             }
         }
         return null;
     }
 
-    @Override
     public boolean containsKey(K key) {
-        for (Node<K, V> node : bucket) {
-            if (node.key.equals(key)) {
+        for (Entry<K, V> entry : entries) {
+            if (entry.getKey().equals(key)) {
                 return true;
             }
         }
         return false;
     }
 
-    @Override
-    public void remove(K key) {
-        for (int i = 0; i < bucket.size(); i++) {
-            if (bucket.get(i).key.equals(key)) {
-                bucket.remove(i);
-                size--;
-                return;
-            }
+    public Set<K> keySet() {
+        Set<K> keys = new HashSet<>();
+        for (Entry<K, V> entry : entries) {
+            keys.add(entry.getKey());
         }
+        return keys;
     }
 
-    @Override
-    public int size() {
-        return size;
-    }
 
-@Override
-    public V getOrDefault(K key, V defaultValue) {
-        if (containsKey(key)) {
-            return get(key);
-        }
-        return defaultValue;
-    }
 }
 
 
-class Node<K, V> {
-    K key;
-    V value;
 
-    Node(K key, V value) {
+ class Entry<K, V> {
+    private K key;
+    private V value;
+
+    public Entry(K key, V value) {
         this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() {
+        return key;
+    }
+
+    public void setKey(K key) {
+        this.key = key;
+    }
+
+    public V getValue() {
+        return value;
+    }
+
+    public void setValue(V value) {
         this.value = value;
     }
 }
