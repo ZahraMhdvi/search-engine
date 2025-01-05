@@ -6,4 +6,5 @@ public interface MapInterface<K, V> {
     void remove(K key);
     boolean containsKey(K key);
     int size();
+    V getOrDefault(K key,V defaultValue);
 }
