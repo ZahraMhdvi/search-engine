@@ -3,71 +3,47 @@ package DataStructures;
 import Interface.MapInterface;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Map<K, V> implements MapInterface<K, V> {
-    private static final int INITIAL_CAPACITY = 16;
-    private List<LinkedList<Entry<K, V>>> buckets;
+    private List<Node<K, V>> bucket;
     private int size;
 
     public Map() {
-        buckets = new ArrayList<>(INITIAL_CAPACITY);
-        for (int i = 0; i < INITIAL_CAPACITY; i++) {
-            buckets.add(new LinkedList<>());
-        }
-        size = 0;
+        this.bucket = new ArrayList<>();
+        this.size = 0;
     }
 
-    private int hash(K key) {
-        return Math.abs(key.hashCode() % buckets.size());
-    }
+
 
     @Override
     public void put(K key, V value) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets.get(index);
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                entry.value = value;
+        for (Node<K, V> node : bucket) {
+            if (node.key.equals(key)) {
+                node.value = value;
                 return;
             }
         }
-        bucket.add(new Entry<>(key, value));
+        bucket.add(new Node<>(key, value));
         size++;
     }
 
     @Override
     public V get(K key) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets.get(index);
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                return entry.value;
+        for (Node<K, V> node : bucket) {
+            if (node.key.equals(key)) {
+                return node.value;
             }
         }
         return null;
     }
 
     @Override
-    public void remove(K key) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets.get(index);
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                bucket.remove(entry);
-                size--;
-                return;
-            }
-        }
-    }
-
-    @Override
     public boolean containsKey(K key) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets.get(index);
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
+        for (Node<K, V> node : bucket) {
+            if (node.key.equals(key)) {
                 return true;
             }
         }
@@ -75,17 +51,37 @@ public class Map<K, V> implements MapInterface<K, V> {
     }
 
     @Override
+    public void remove(K key) {
+        for (int i = 0; i < bucket.size(); i++) {
+            if (bucket.get(i).key.equals(key)) {
+                bucket.remove(i);
+                size--;
+                return;
+            }
+        }
+    }
+
+    @Override
     public int size() {
         return size;
     }
 
-    private static class Entry<K, V> {
-        K key;
-        V value;
-
-        public Entry(K key, V value) {
-            this.key = key;
-            this.value = value;
+@Override
+    public V getOrDefault(K key, V defaultValue) {
+        if (containsKey(key)) {
+            return get(key);
         }
+        return defaultValue;
+    }
+}
+
+
+class Node<K, V> {
+    K key;
+    V value;
+
+    Node(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 }
