@@ -75,42 +75,43 @@ public class SearchEngine implements SearchEngineInterface {
         return formattedResults;
     }
 
-    private void validateQuery(String query) throws InvalidInput, LogicalError {
+    public void validateQuery(String query) throws InvalidInput, LogicalError {
         if (query == null || query.isEmpty()) {
             throw new InvalidInput();
         }
 
-        Set<String> noOperatorWords = new HashSet<>();
-        Set<String> positiveWords = new HashSet<>();
-        Set<String> negativeWords = new HashSet<>();
-
+        Map<String, Set<String>> termOperators = new HashMap<>();
         String[] terms = query.split("\\s+");
+
         for (String term : terms) {
+            String cleanTerm;
+            String operator;
+
             if (term.startsWith("+")) {
-                String cleanTerm = term.substring(1).toLowerCase();
-                if (!cleanTerm.matches("[a-zA-Z0-9]+")) {
-                    throw new InvalidInput();
-                }
-                positiveWords.add(cleanTerm);
+                cleanTerm = term.substring(1).toLowerCase();
+                operator = "+";
             } else if (term.startsWith("-")) {
-                String cleanTerm = term.substring(1).toLowerCase();
-                if (!cleanTerm.matches("[a-zA-Z0-9]+")) {
-                    throw new InvalidInput();
-                }
-                negativeWords.add(cleanTerm);
+                cleanTerm = term.substring(1).toLowerCase();
+                operator = "-";
             } else {
-                String cleanTerm = term.toLowerCase();
-                if (!cleanTerm.matches("[a-zA-Z0-9]+")) {
-                    throw new InvalidInput();
-                }
-                noOperatorWords.add(cleanTerm);
+                cleanTerm = term.toLowerCase();
+                operator = "no_operator";
             }
+
+            if (!cleanTerm.matches("[a-zA-Z0-9]+")) {
+                throw new InvalidInput();
+            }
+
+            termOperators.putIfAbsent(cleanTerm, new HashSet<>());
+            termOperators.get(cleanTerm).add(operator);
         }
 
-        for (String word : positiveWords) {
-            if (noOperatorWords.contains(word) || negativeWords.contains(word)) {
+        for (Map.Entry<String, Set<String>> entry : termOperators.entrySet()) {
+            Set<String> operators = entry.getValue();
+            if (operators.size() > 1) {
                 throw new LogicalError();
             }
         }
     }
+
 }
