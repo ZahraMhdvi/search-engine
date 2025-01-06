@@ -1,11 +1,10 @@
 package DataStructures;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import Interface.MapInterface;
 
-public class Map<K, V> {
+import java.util.*;
+
+public class Map<K, V> implements MapInterface<K, V> {
     private static final int INITIAL_CAPACITY = 16;
     private static final double LOAD_FACTOR = 0.75;
 
@@ -13,14 +12,15 @@ public class Map<K, V> {
     private int size;
 
     public Map() {
-        buckets = new ArrayList[INITIAL_CAPACITY];
-        size = 0;
+        this.buckets = new ArrayList[INITIAL_CAPACITY];
+        this.size = 0;
     }
 
-    private int getBucketIndex(K key) {
+    public int getBucketIndex(K key) {
         return Math.abs(key.hashCode()) % buckets.length;
     }
 
+    @Override
     public void put(K key, V value) {
         int bucketIndex = getBucketIndex(key);
 
@@ -28,15 +28,14 @@ public class Map<K, V> {
             buckets[bucketIndex] = new ArrayList<>();
         }
 
-        List<Entry<K, V>> bucket = buckets[bucketIndex];
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                entry.value = value;
+        for (Entry<K, V> entry : buckets[bucketIndex]) {
+            if (entry.getKey().equals(key)) {
+                entry.setValue(value);
                 return;
             }
         }
 
-        bucket.add(new Entry<>(key, value));
+        buckets[bucketIndex].add(new Entry<>(key, value));
         size++;
 
         if (size >= LOAD_FACTOR * buckets.length) {
@@ -44,72 +43,69 @@ public class Map<K, V> {
         }
     }
 
+    @Override
     public V get(K key) {
         int bucketIndex = getBucketIndex(key);
-
-        if (buckets[bucketIndex] == null) {
-            return null;
-        }
-
-        for (Entry<K, V> entry : buckets[bucketIndex]) {
-            if (entry.key.equals(key)) {
-                return entry.value;
+        if (buckets[bucketIndex] != null) {
+            for (Entry<K, V> entry : buckets[bucketIndex]) {
+                if (entry.getKey().equals(key)) {
+                    return entry.getValue();
+                }
             }
         }
-
         return null;
     }
 
+    @Override
     public V getOrDefault(K key, V defaultValue) {
         V value = get(key);
         return value != null ? value : defaultValue;
     }
 
+    @Override
     public boolean containsKey(K key) {
+        return get(key) != null;
+    }
+
+    @Override
+    public void remove(K key) {
         int bucketIndex = getBucketIndex(key);
-
-        if (buckets[bucketIndex] == null) {
-            return false;
+        if (buckets[bucketIndex] != null) {
+            buckets[bucketIndex].removeIf(entry -> entry.getKey().equals(key));
+            size--;
         }
+    }
 
-        for (Entry<K, V> entry : buckets[bucketIndex]) {
-            if (entry.key.equals(key)) {
-                return true;
-            }
-        }
-
-        return false;
+    @Override
+    public int size() {
+        return size;
     }
 
     public Set<K> keySet() {
         Set<K> keys = new HashSet<>();
-
         for (List<Entry<K, V>> bucket : buckets) {
             if (bucket != null) {
                 for (Entry<K, V> entry : bucket) {
-                    keys.add(entry.key);
+                    keys.add(entry.getKey());
                 }
             }
         }
-
         return keys;
     }
 
-    public List<V> values() {
+    public Collection<V> values() {
         List<V> values = new ArrayList<>();
-
         for (List<Entry<K, V>> bucket : buckets) {
             if (bucket != null) {
                 for (Entry<K, V> entry : bucket) {
-                    values.add(entry.value);
+                    values.add(entry.getValue());
                 }
             }
         }
-
         return values;
     }
 
-    private void resize() {
+    public void resize() {
         List<Entry<K, V>>[] oldBuckets = buckets;
         buckets = new ArrayList[oldBuckets.length * 2];
         size = 0;
@@ -117,23 +113,33 @@ public class Map<K, V> {
         for (List<Entry<K, V>> bucket : oldBuckets) {
             if (bucket != null) {
                 for (Entry<K, V> entry : bucket) {
-                    put(entry.key, entry.value);
+                    put(entry.getKey(), entry.getValue());
                 }
             }
         }
     }
 
-    public int size() {
-        return size;
+
+}
+
+class Entry<K, V> {
+    private final K key;
+    private V value;
+
+    public Entry(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 
-    private static class Entry<K, V> {
-        private final K key;
-        private V value;
+    public K getKey() {
+        return key;
+    }
 
-        public Entry(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
+    public V getValue() {
+        return value;
+    }
+
+    public void setValue(V value) {
+        this.value = value;
     }
 }
