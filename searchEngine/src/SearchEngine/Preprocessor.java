@@ -27,7 +27,7 @@ public class Preprocessor {
                     originalDocuments.put(documentId, content);
                     cleanedDocuments.put(documentId, cleanContent(content));
                 } catch (IOException e) {
-                    System.err.println("Error reading file: " + file.getName());
+                    System.out.println(e.getMessage());;
                 }
             }
         }
@@ -40,9 +40,7 @@ public class Preprocessor {
         return Arrays.asList(words);
     }
 
-    public Map<Integer, String> getOriginalDocuments() {
-        return originalDocuments;
-    }
+
 
     public Map<Integer, List<String>> getCleanedDocuments() {
         return cleanedDocuments;
