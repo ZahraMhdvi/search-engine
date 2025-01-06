@@ -85,7 +85,7 @@ public class SearchEngine {
 
 
 
-    private void validateQuery(String query) throws InvalidInput, LogicalError {
+    public void validateQuery(String query) throws InvalidInput, LogicalError {
         if (query == null || query.isEmpty()) {
             throw new InvalidInput();
         }

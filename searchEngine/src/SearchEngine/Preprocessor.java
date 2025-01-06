@@ -33,7 +33,7 @@ public class Preprocessor {
         }
     }
 
-    private List<String> cleanContent(String content) {
+    public List<String> cleanContent(String content) {
         String[] words = content.toLowerCase()
                 .replaceAll("[^a-z0-9 ]", " ")
                 .split("\\s+");
