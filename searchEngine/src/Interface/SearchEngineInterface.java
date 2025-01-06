@@ -1,9 +1,8 @@
 package Interface;
 
-import java.util.Set;
+import java.util.List;
 
 public interface SearchEngineInterface {
     void preprocessDocuments(String folderPath);
-    Set<String> search(String query);
-    void printSearchResults(Set<String> results);
+    List<String> search(String query) throws Exception;
 }
