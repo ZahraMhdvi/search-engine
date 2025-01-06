@@ -1,25 +1,28 @@
 package SearchEngine;
 
 import DataStructures.InvertedIndex;
-import SearchEngine.Preprocessor;
+import Interface.SearchEngineInterface;
 import Exception.InvalidInput;
 import Exception.LogicalError;
 
 import java.util.*;
 
-public class SearchEngine {
-    private InvertedIndex invertedIndex;
+public class SearchEngine implements SearchEngineInterface {
+    private final InvertedIndex invertedIndex;
+    private final Preprocessor preprocessor;
 
     public SearchEngine() {
         this.invertedIndex = new InvertedIndex();
+        this.preprocessor = new Preprocessor();
     }
 
+    @Override
     public void preprocessDocuments(String folderPath) {
-        Preprocessor preprocessor = new Preprocessor();
         preprocessor.preprocessDocuments(folderPath);
         invertedIndex.buildIndex(preprocessor.getCleanedDocuments());
     }
 
+    @Override
     public List<String> search(String query) throws InvalidInput, LogicalError {
         validateQuery(query);
 
@@ -53,18 +56,7 @@ public class SearchEngine {
             }
         }
 
-        for (String term : terms) {
-            if (term.startsWith("+") && exclude.containsAll(invertedIndex.getDocuments(term.substring(1).toLowerCase()))) {
-                throw new LogicalError();
-            }
-        }
-
-        Set<Integer> results;
-        if (mustInclude != null) {
-            results = new HashSet<>(mustInclude);
-        } else {
-            results = new HashSet<>(invertedIndex.getAllDocuments());
-        }
+        Set<Integer> results = (mustInclude != null) ? new HashSet<>(mustInclude) : new HashSet<>(invertedIndex.getAllDocuments());
 
         if (!atLeastOneInclude.isEmpty()) {
             results.retainAll(atLeastOneInclude);
@@ -83,9 +75,7 @@ public class SearchEngine {
         return formattedResults;
     }
 
-
-
-    public void validateQuery(String query) throws InvalidInput, LogicalError {
+    private void validateQuery(String query) throws InvalidInput, LogicalError {
         if (query == null || query.isEmpty()) {
             throw new InvalidInput();
         }
@@ -118,22 +108,9 @@ public class SearchEngine {
         }
 
         for (String word : positiveWords) {
-            if (noOperatorWords.contains(word)) {
-                throw new LogicalError();
-            }
-        }
-
-        for (String word : negativeWords) {
-            if (noOperatorWords.contains(word)) {
-                throw new LogicalError();
-            }
-        }
-
-        for (String word : positiveWords) {
-            if (negativeWords.contains(word)) {
+            if (noOperatorWords.contains(word) || negativeWords.contains(word)) {
                 throw new LogicalError();
             }
         }
     }
-
 }
